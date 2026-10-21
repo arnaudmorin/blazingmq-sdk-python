@@ -210,6 +210,7 @@ cdef class Session:
         monitor_host_health: bool = False,
         fake_host_health_monitor: FakeHostHealthMonitor = None,
         authn_credential_cb: AuthnCredentialCbAdapter = None,
+        tls_certificate_authority: Optional[bytes] = None,
         _mock: Optional[object] = None,
         user_agent_prefix: bytes = b"",
     ) -> None:
@@ -279,6 +280,11 @@ cdef class Session:
         config.configure_queue_timeout = c_configure_queue_timeout
         config.close_queue_timeout = c_close_queue_timeout
         config.monitor_host_health = monitor_host_health
+        if tls_certificate_authority is not None:
+            if b'\x00' in tls_certificate_authority:
+                raise ValueError(
+                    'tls_certificate_authority must not contain an embedded NUL byte')
+            config.tls_certificate_authority = tls_certificate_authority
 
         self._session = shared_ptr[NativeSession](new NativeSession(
             session_cb,

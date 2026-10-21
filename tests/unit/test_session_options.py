@@ -67,6 +67,7 @@ def test_session_options_default_to_none():
     assert options.event_queue_watermarks is None
     assert options.stats_dump_interval is None
     assert options.user_agent_prefix is None
+    assert options.tls_certificate_authority is None
 
 
 def test_session_options_equality():
@@ -98,6 +99,7 @@ def test_session_options_equality():
         blazingmq.SessionOptions(stats_dump_interval=30.0),
         blazingmq.SessionOptions(authn_credential_provider=lambda: None),
         blazingmq.SessionOptions(user_agent_prefix=b"mylib:1.0"),
+        blazingmq.SessionOptions(tls_certificate_authority="/etc/ssl/ca.pem"),
     ],
 )
 def test_queue_options_other_inequality(right):
@@ -118,3 +120,11 @@ def test_session_options_repr_with_authn_credential_provider():
 
     # THEN
     assert "authn_credential_provider=" in repr(options)
+
+
+def test_session_options_repr_with_tls_certificate_authority():
+    # WHEN
+    options = blazingmq.SessionOptions(tls_certificate_authority="/etc/ssl/ca.pem")
+
+    # THEN
+    assert "tls_certificate_authority='/etc/ssl/ca.pem'" in repr(options)

@@ -79,6 +79,7 @@ def test_session_constructed(ext_cls):
         monitor_host_health=False,
         fake_host_health_monitor=None,
         authn_credential_cb=None,
+        tls_certificate_authority=None,
         user_agent_prefix=mock.ANY,  # varies by version; see dedicated tests
     )
 
@@ -128,6 +129,7 @@ def test_session_constructed_with_authn_credential_provider(ext_cls):
         monitor_host_health=False,
         fake_host_health_monitor=None,
         authn_credential_cb=mock.ANY,
+        tls_certificate_authority=None,
     )
     call_kwargs = ext_cls.call_args[1]
     assert call_kwargs["authn_credential_cb"] is not None
@@ -181,6 +183,7 @@ def test_session_constructed_with_timeouts(ext_cls):
         monitor_host_health=False,
         fake_host_health_monitor=None,
         authn_credential_cb=None,
+        tls_certificate_authority=None,
         user_agent_prefix=mock.ANY,  # varies by version; see dedicated tests
     )
 
@@ -227,6 +230,7 @@ def test_session_constructed_with_default_timeouts(ext_cls):
         monitor_host_health=False,
         fake_host_health_monitor=None,
         authn_credential_cb=None,
+        tls_certificate_authority=None,
         user_agent_prefix=mock.ANY,  # varies by version; see dedicated tests
     )
 
@@ -264,6 +268,7 @@ def test_session_default_with_options(ext_cls):
         monitor_host_health=False,
         fake_host_health_monitor=None,
         authn_credential_cb=None,
+        tls_certificate_authority=None,
         user_agent_prefix=mock.ANY,  # varies by version; see dedicated tests
     )
 
@@ -318,6 +323,7 @@ def test_session_with_options(ext_cls):
         monitor_host_health=False,
         fake_host_health_monitor=None,
         authn_credential_cb=None,
+        tls_certificate_authority=None,
         user_agent_prefix=mock.ANY,  # varies by version; see dedicated tests
     )
 
@@ -386,6 +392,7 @@ def test_session_default_with_options_authn_credential_provider(ext_cls):
         monitor_host_health=False,
         fake_host_health_monitor=None,
         authn_credential_cb=mock.ANY,
+        tls_certificate_authority=None,
     )
     call_kwargs = ext_cls.call_args[1]
     assert call_kwargs["authn_credential_cb"] is not None
@@ -438,6 +445,7 @@ def test_session_with_options_authn_credential_provider(ext_cls):
         monitor_host_health=False,
         fake_host_health_monitor=None,
         authn_credential_cb=mock.ANY,
+        tls_certificate_authority=None,
     )
     call_kwargs = ext_cls.call_args[1]
     assert call_kwargs["authn_credential_cb"] is not None
@@ -486,6 +494,7 @@ def test_session_basic_monitor(ext_cls):
         monitor_host_health=True,
         fake_host_health_monitor=monitor._monitor,
         authn_credential_cb=None,
+        tls_certificate_authority=None,
         user_agent_prefix=mock.ANY,  # varies by version; see dedicated tests
     )
 
@@ -519,6 +528,7 @@ def test_session_default_constructed(ext_cls):
         monitor_host_health=False,
         fake_host_health_monitor=None,
         authn_credential_cb=None,
+        tls_certificate_authority=None,
         user_agent_prefix=mock.ANY,  # varies by version; see dedicated tests
     )
 
@@ -1350,3 +1360,53 @@ def test_host_health_repr():
     msg = repr(HostHealth())
     # THEN
     assert msg == "BasicHealthMonitor()"
+
+
+@mock.patch("blazingmq._session.ExtSession")
+def test_session_constructed_with_tls_certificate_authority(ext_cls, tmp_path):
+    # GIVEN
+    ext_cls.mock_add_spec([])
+    ca = tmp_path / "ca.pem"
+    ca.write_text("dummy")
+
+    def dummy():
+        pass
+
+    # WHEN
+    Session(dummy, tls_certificate_authority=str(ca))
+
+    # THEN
+    assert ext_cls.call_args[1]["tls_certificate_authority"] == bytes(ca)
+
+
+@mock.patch("blazingmq._session.ExtSession")
+def test_session_tls_certificate_authority_must_exist(ext_cls, tmp_path):
+    # GIVEN
+    ext_cls.mock_add_spec([])
+
+    def dummy():
+        pass
+
+    # WHEN / THEN
+    with pytest.raises(ValueError, match="must be an existing file"):
+        Session(dummy, tls_certificate_authority=str(tmp_path / "missing.pem"))
+    ext_cls.assert_not_called()
+
+
+@mock.patch("blazingmq._session.ExtSession")
+def test_session_with_options_tls_certificate_authority(ext_cls, tmp_path):
+    # GIVEN
+    ext_cls.mock_add_spec([])
+    ca = tmp_path / "ca.pem"
+    ca.write_text("dummy")
+
+    def dummy():
+        pass
+
+    # WHEN
+    Session.with_options(
+        dummy, session_options=SessionOptions(tls_certificate_authority=str(ca))
+    )
+
+    # THEN
+    assert ext_cls.call_args[1]["tls_certificate_authority"] == bytes(ca)

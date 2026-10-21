@@ -57,6 +57,7 @@ class Session:
         monitor_host_health: bool = False,
         fake_host_health_monitor: Optional[FakeHostHealthMonitor] = None,
         authn_credential_cb: Optional[AuthnCredentialCbAdapter] = None,
+        tls_certificate_authority: Optional[bytes] = None,
         user_agent_prefix: bytes = b"",
     ) -> None: ...
     def stop(self) -> None: ...

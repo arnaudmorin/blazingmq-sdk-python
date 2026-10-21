@@ -12,10 +12,14 @@ set -u
 
 # These are the release tags for each of the dependencies we manually clone.
 # Update these to update the version of each dependency we build against.
-BDE_TOOLS_TAG=4.38.0.0
-BDE_TAG=4.38.0.0
+BDE_TOOLS_TAG=4.39.0.0
+BDE_TAG=4.39.0.0
 NTF_CORE_TAG=2.6.12
-BLAZINGMQ_TAG=v0.95.20
+# NOTE(arnaud) TLS client support (bloomberg/blazingmq#1600) is not merged
+# upstream yet: build against the tls branch of the fork (upstream
+# main plus #1600), pinned to a commit
+BLAZINGMQ_REPO=https://github.com/arnaudmorin/blazingmq.git
+BLAZINGMQ_TAG=65eb51c974284f399f0b978629b54122a9e829be  # tls branch
 
 
 if [ ! -d "${DIR_THIRDPARTY}/bde-tools" ]; then
@@ -41,7 +45,7 @@ fi
 
 if [ ! -d "${DIR_THIRDPARTY}/blazingmq" ]; then
     git clone                                                                  \
-        https://github.com/bloomberg/blazingmq.git                             \
+        ${BLAZINGMQ_REPO}                                                      \
         "${DIR_THIRDPARTY}/blazingmq"
     git -C "${DIR_THIRDPARTY}/blazingmq" checkout ${BLAZINGMQ_TAG}
 fi

@@ -37,8 +37,8 @@ namespace pybmq {
 /// `Session` treats as unset.  A new option can therefore be added as a
 /// field without changing any existing call site.
 ///
-/// `broker_uri` and `script_name` are held, not owned, and must outlive the
-/// `Session` constructor call.
+/// `broker_uri`, `script_name` and `tls_certificate_authority` are held, not
+/// owned, and must outlive the `Session` constructor call.
 struct SessionConfig
 {
     // PUBLIC DATA
@@ -56,6 +56,7 @@ struct SessionConfig
     bsls::TimeInterval configure_queue_timeout;
     bsls::TimeInterval close_queue_timeout;
     bool monitor_host_health;
+    const char* tls_certificate_authority;  // null: no TLS
 
     // CREATORS
     SessionConfig();
@@ -80,6 +81,7 @@ inline SessionConfig::SessionConfig()
 , configure_queue_timeout()
 , close_queue_timeout()
 , monitor_host_health(false)
+, tls_certificate_authority(0)
 {
 }
 

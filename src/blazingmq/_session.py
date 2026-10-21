@@ -15,6 +15,7 @@
 
 from __future__ import annotations
 
+import os
 import platform
 from typing import Any
 from typing import Callable
@@ -78,6 +79,21 @@ def _validate_timeouts(timeouts: Timeouts) -> Timeouts:
         configure_queue_timeout=_convert_timeout(timeouts.configure_queue_timeout),
         close_queue_timeout=_convert_timeout(timeouts.close_queue_timeout),
     )
+
+
+def _convert_tls_certificate_authority(
+    tls_certificate_authority: Optional[str],
+) -> Optional[bytes]:
+    if tls_certificate_authority is None:
+        return None
+    # The C++ SDK aborts the process if this file does not exist, so check
+    # it here and raise instead
+    if not os.path.isfile(tls_certificate_authority):
+        raise ValueError(
+            f"tls_certificate_authority ({tls_certificate_authority!r}) "
+            "must be an existing file"
+        )
+    return os.fsencode(tls_certificate_authority)
 
 
 def _make_user_agent_prefix(user_agent_prefix: Optional[bytes]) -> bytes:
@@ -360,6 +376,12 @@ class SessionOptions:
             already-started session sees `.ConnectionLost` and then
             reconnects, calling this callable again.  If not provided, no
             authentication credentials are sent to the broker.
+        tls_certificate_authority:
+            Path to a file with the certificates of the authorities trusted to
+            sign the broker certificate.  If set, the session connects to the
+            broker with TLS (version 1.3) and verifies its certificate; the
+            broker must listen with TLS.  If not provided, the connection is
+            not encrypted.
     """
 
     def __init__(
@@ -376,6 +398,7 @@ class SessionOptions:
         authn_credential_provider: Optional[AuthnCredentialProvider] = (
             DefaultAuthnCredentialProvider()
         ),
+        tls_certificate_authority: Optional[str] = None,
     ) -> None:
         self.message_compression_algorithm = message_compression_algorithm
         self.timeouts = timeouts
@@ -387,6 +410,7 @@ class SessionOptions:
         self.stats_dump_interval = stats_dump_interval
         self.user_agent_prefix = user_agent_prefix
         self.authn_credential_provider = authn_credential_provider
+        self.tls_certificate_authority = tls_certificate_authority
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, SessionOptions):
@@ -402,6 +426,7 @@ class SessionOptions:
             and self.stats_dump_interval == other.stats_dump_interval
             and self.user_agent_prefix == other.user_agent_prefix
             and self.authn_credential_provider == other.authn_credential_provider
+            and self.tls_certificate_authority == other.tls_certificate_authority
         )
 
     def __ne__(self, other: object) -> bool:
@@ -419,6 +444,7 @@ class SessionOptions:
             "stats_dump_interval",
             "user_agent_prefix",
             "authn_credential_provider",
+            "tls_certificate_authority",
         )
 
         params = []
@@ -496,6 +522,11 @@ class Session:
             already-started session sees `.ConnectionLost` and then
             reconnects, calling this callable again.  If not provided, no
             authentication credentials are sent to the broker.
+        tls_certificate_authority: Path to a file with the certificates of
+            the authorities trusted to sign the broker certificate.  If set,
+            the session connects to the broker with TLS (version 1.3) and
+            verifies its certificate; the broker must listen with TLS.  If not
+            provided, the connection is not encrypted.
 
     Raises:
         `~blazingmq.Error`: If the session start request was not successful.
@@ -503,7 +534,8 @@ class Session:
             to the request within a reasonable amount of time.
         `ValueError`: If any of the timeouts are provided and not > 0.0, or if
             ``stats_dump_interval`` is not a multiple of 30 seconds in
-            ``[0s, 60min)``, or if ``channel_high_watermark`` is at most 8 MiB.
+            ``[0s, 60min)``, or if ``channel_high_watermark`` is at most 8 MiB,
+            or if ``tls_certificate_authority`` is not an existing file.
     """
 
     def __init__(
@@ -525,6 +557,7 @@ class Session:
         authn_credential_provider: Optional[AuthnCredentialProvider] = (
             DefaultAuthnCredentialProvider()
         ),
+        tls_certificate_authority: Optional[str] = None,
     ) -> None:
         if host_health_monitor is not None:
             if not isinstance(host_health_monitor, BasicHealthMonitor):
@@ -572,6 +605,9 @@ class Session:
             monitor_host_health=monitor_host_health,
             fake_host_health_monitor=fake_host_health_monitor,
             authn_credential_cb=authn_credential_cb,
+            tls_certificate_authority=_convert_tls_certificate_authority(
+                tls_certificate_authority
+            ),
             user_agent_prefix=_make_user_agent_prefix(user_agent_prefix),
         )
         self._ext.set_owned_by_session()
@@ -612,7 +648,8 @@ class Session:
                 to the request within a reasonable amount of time.
             `ValueError`: If any of the timeouts are provided and not > 0.0, or if
                 ``stats_dump_interval`` is not a multiple of 30 seconds in
-                ``[0s, 60min)``, or if ``channel_high_watermark`` is at most 8 MiB.
+                ``[0s, 60min)``, or if ``channel_high_watermark`` is at most 8 MiB,
+                or if ``tls_certificate_authority`` is not an existing file.
         """
         message_compression_algorithm = session_options.message_compression_algorithm
         if message_compression_algorithm is None:
@@ -636,6 +673,7 @@ class Session:
             stats_dump_interval=session_options.stats_dump_interval,
             user_agent_prefix=session_options.user_agent_prefix,
             authn_credential_provider=session_options.authn_credential_provider,
+            tls_certificate_authority=session_options.tls_certificate_authority,
         )
 
     def open_queue(

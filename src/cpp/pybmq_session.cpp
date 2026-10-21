@@ -242,6 +242,12 @@ Session::Session(
             options.setCloseQueueTimeout(config.close_queue_timeout);
         }
 
+        if (config.tls_certificate_authority) {
+            // Connect with TLS, verifying the broker certificate against this
+            // certificate authority
+            options.configureTls(config.tls_certificate_authority);
+        }
+
         options.setUserAgentPrefix(user_agent_prefix);
 
         bslma::ManagedPtr<bmqa::SessionEventHandler> handler(

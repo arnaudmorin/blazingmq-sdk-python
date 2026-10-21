@@ -52,6 +52,7 @@ cdef extern from "pybmq_sessionconfig.h" namespace "BloombergLP::pybmq" nogil:
         TimeInterval configure_queue_timeout
         TimeInterval close_queue_timeout
         bint monitor_host_health
+        const char* tls_certificate_authority
 
 cdef extern from "pybmq_session.h" namespace "BloombergLP::pybmq" nogil:
     cdef cppclass Session:
