@@ -162,7 +162,7 @@ if [ ! -e "${DIR_BUILD}/blazingmq/.complete" ]; then
         -DCMAKE_PREFIX_PATH="${DIR_THIRDPARTY}/bde-tools" \
         -DCMAKE_TOOLCHAIN_FILE="${DIR_THIRDPARTY}/bde-tools/BdeBuildSystem/toolchains/linux/gcc-default.cmake" \
         -G "Ninja")
-    PKG_CONFIG_PATH="$(pkg-config --variable pc_path pkg-config):${DIR_INSTALL}/lib64/pkgconfig" \
+    PKG_CONFIG_PATH="$(pkg-config --variable pc_path pkg-config):${DIR_INSTALL}/lib64/pkgconfig:${DIR_INSTALL}/openssl/lib/pkgconfig" \
     cmake -B "${DIR_BUILD}/blazingmq" -S "." "${CMAKE_OPTIONS[@]}"
     cmake --build "${DIR_BUILD}/blazingmq" -j 16 --target all
     cmake --install "${DIR_BUILD}/blazingmq"
