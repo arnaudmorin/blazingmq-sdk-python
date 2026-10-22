@@ -120,7 +120,7 @@ if [ ! -e "${DIR_BUILD}/ntf-core/.complete" ]; then
         --without-zlib \
         --without-lz4 \
         --without-zstd \
-        --without-openssl \
+        --with-openssl \
         --without-warnings-as-errors \
         --without-usage-examples \
         --without-applications
