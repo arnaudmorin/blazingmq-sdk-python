@@ -130,6 +130,7 @@ def test_session_constructed_with_authn_credential_provider(ext_cls):
         fake_host_health_monitor=None,
         authn_credential_cb=mock.ANY,
         tls_certificate_authority=None,
+        user_agent_prefix=mock.ANY,  # varies by version; see dedicated tests
     )
     call_kwargs = ext_cls.call_args[1]
     assert call_kwargs["authn_credential_cb"] is not None
@@ -393,6 +394,7 @@ def test_session_default_with_options_authn_credential_provider(ext_cls):
         fake_host_health_monitor=None,
         authn_credential_cb=mock.ANY,
         tls_certificate_authority=None,
+        user_agent_prefix=mock.ANY,  # varies by version; see dedicated tests
     )
     call_kwargs = ext_cls.call_args[1]
     assert call_kwargs["authn_credential_cb"] is not None
@@ -446,6 +448,7 @@ def test_session_with_options_authn_credential_provider(ext_cls):
         fake_host_health_monitor=None,
         authn_credential_cb=mock.ANY,
         tls_certificate_authority=None,
+        user_agent_prefix=mock.ANY,  # varies by version; see dedicated tests
     )
     call_kwargs = ext_cls.call_args[1]
     assert call_kwargs["authn_credential_cb"] is not None

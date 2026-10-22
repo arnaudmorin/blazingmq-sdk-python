@@ -19,7 +19,7 @@ NTF_CORE_TAG=2.6.12
 # upstream yet: build against the tls branch of the fork (upstream
 # main plus #1600), pinned to a commit
 BLAZINGMQ_REPO=https://github.com/arnaudmorin/blazingmq.git
-BLAZINGMQ_TAG=65eb51c974284f399f0b978629b54122a9e829be  # tls branch
+BLAZINGMQ_TAG=ee5a2b7ce92a780ee327df6bee2668bcceea09a9  # tls branch
 
 
 if [ ! -d "${DIR_THIRDPARTY}/bde-tools" ]; then
