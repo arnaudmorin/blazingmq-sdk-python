@@ -52,8 +52,7 @@ jobs:
               libbenchmark-dev \
               libgtest-dev \
               libgmock-dev \
-              libz-dev \
-              libssl-dev
+              libz-dev
 
       - name: Create install directory for BlazingMQ and its dependencies
         if: steps.cache-restore.outputs.cache-hit != 'true'
@@ -135,8 +134,7 @@ jobs:
             libbenchmark-dev \
             libgtest-dev \
             libgmock-dev \
-            libz-dev \
-            libssl-dev
+            libz-dev
       - name: Log in to GHCR
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:

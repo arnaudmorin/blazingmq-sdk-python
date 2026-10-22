@@ -15,6 +15,7 @@ set -u
 BDE_TOOLS_TAG=4.39.0.0
 BDE_TAG=4.39.0.0
 NTF_CORE_TAG=2.6.12
+OPENSSL_TAG=3.5.9
 # NOTE(arnaud) TLS client support (bloomberg/blazingmq#1600) is not merged
 # upstream yet: build against the tls branch of the fork (upstream
 # main plus #1600), pinned to a commit

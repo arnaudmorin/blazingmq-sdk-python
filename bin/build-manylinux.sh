@@ -95,6 +95,21 @@ if [ ! -e "${DIR_BUILD}/googletest/.complete" ]; then
     touch "${DIR_BUILD}/googletest/.complete"
 fi
 
+# Build and install OpenSSL, statically, for the TLS support of NTF
+# NOTE(arnaud) the static libraries are not packaged in manylinux (AlmaLinux)
+if [ ! -e "${DIR_BUILD}/openssl/.complete" ]; then
+    mkdir -p "${DIR_THIRDPARTY}/openssl" "${DIR_BUILD}/openssl"
+    curl -L "https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_TAG}/openssl-${OPENSSL_TAG}.tar.gz" \
+        | tar -zx -C "${DIR_THIRDPARTY}/openssl" --strip-components 1
+    pushd "${DIR_BUILD}/openssl"
+    "${DIR_THIRDPARTY}/openssl/Configure" linux-x86_64 no-shared no-tests no-docs -fPIC \
+        --prefix="${DIR_INSTALL}/openssl" --libdir=lib
+    make -j 16
+    make install_sw
+    popd
+    touch "${DIR_BUILD}/openssl/.complete"
+fi
+
 # Build and install BDE
 # Refer to https://bloomberg.github.io/bde/library_information/build.html
 PATH="${DIR_THIRDPARTY}/bde-tools/bin:$PATH"
@@ -113,9 +128,9 @@ fi
 if [ ! -e "${DIR_BUILD}/ntf-core/.complete" ]; then
     # Build and install NTF
     pushd "${DIR_THIRDPARTY}/ntf-core"
-    # NOTE(arnaud) NTF looks for OpenSSL in its install prefix (e.g. /usr/local)
-    # unless OPENSSL_ROOT_DIR is set: use the system one
-    export OPENSSL_ROOT_DIR="${OPENSSL_ROOT_DIR:-/usr}"
+    # NOTE(arnaud) NTF links OpenSSL statically, and looks for it in its install
+    # prefix unless OPENSSL_ROOT_DIR is set: use the one built above
+    export OPENSSL_ROOT_DIR="${DIR_INSTALL}/openssl"
     ./configure --prefix "${DIR_INSTALL}" \
         --output "${DIR_BUILD}/ntf-core" \
         --ufid opt_64_pic_cpp17 \
