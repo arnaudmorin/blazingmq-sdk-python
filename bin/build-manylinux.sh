@@ -113,6 +113,9 @@ fi
 if [ ! -e "${DIR_BUILD}/ntf-core/.complete" ]; then
     # Build and install NTF
     pushd "${DIR_THIRDPARTY}/ntf-core"
+    # NOTE(arnaud) NTF looks for OpenSSL in its install prefix (e.g. /usr/local)
+    # unless OPENSSL_ROOT_DIR is set: use the system one
+    export OPENSSL_ROOT_DIR="${OPENSSL_ROOT_DIR:-/usr}"
     ./configure --prefix "${DIR_INSTALL}" \
         --output "${DIR_BUILD}/ntf-core" \
         --ufid opt_64_pic_cpp17 \
