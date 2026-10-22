@@ -20,10 +20,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Set a local version, e.g. 1.2.3+secure.4650e0a
-        run: |
-          sed -i -E "s/^__version__ = \"(.*)\"$/__version__ = \"\1+secure.${GITHUB_SHA::7}\"/" src/blazingmq/_about.py
-          grep __version__ src/blazingmq/_about.py
       - name: Disable ptrace security restrictions
         run: |
           echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
@@ -53,7 +49,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          VERSION=$(ls blazingmq-*.whl | cut -d- -f2)
-          echo "Will do a release v$VERSION with a tag on $GITHUB_SHA"
-          gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" \
+          # NOTE(arnaud) keep the upstream version in the wheel (it is sent in
+          # the user agent, limited in length): the commit is in the tag only,
+          # e.g. v1.2.3-secure.4650e0a
+          TAG="v$(ls blazingmq-*.whl | cut -d- -f2)-secure.${GITHUB_SHA::7}"
+          echo "Will do a release $TAG with a tag on $GITHUB_SHA"
+          gh release create "$TAG" --target "$GITHUB_SHA" --title "$TAG" \
               --notes "Wheel of the secure branch (authentication and TLS)" *.whl
